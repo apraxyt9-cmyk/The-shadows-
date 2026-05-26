@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The ShadowS SMP | Join Our Minecraft Server</title>
+    <style>
+        /* Modern Dark Theme Variables */
+        :root {
+            --bg-color: #121214;
+            --card-bg: #1a1a1e;
+            --accent-color: #9d4edd;
+            --accent-hover: #7b2cbf;
+            --text-color: #f8f9fa;
+            --text-muted: #b0b0b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Hero Section */
+        header {
+            background: linear-gradient(rgba(18, 18, 20, 0.8), rgba(18, 18, 20, 0.95)), 
+                        url('https://images.unsplash.com/photo-1605899435973-ca2d1a8861cf?q=80&w=1920') no-repeat center center/cover;
+            padding: 80px 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        .logo-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 0 20px rgba(157, 78, 221, 0.6);
+            margin-bottom: 10px;
+        }
+
+        .logo-title span {
+            color: var(--accent-color);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 30px auto;
+        }
+
+        /* Server IP Widget Box */
+        .ip-container {
+            background-color: var(--card-bg);
+            border: 2px solid #2a2a30;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            overflow: hidden;
+            max-width: 100%;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .ip-text {
+            padding: 15px 25px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            background: #101012;
+        }
+
+        .copy-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Main Content Grid */
+        main {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex-grow: 1;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 4px;
+            background-color: var(--accent-color);
+            margin: 10px auto 0 auto;
+            border-radius: 2px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .feature-card {
+            background-color: var(--card-bg);
+            border: 1px solid #25252b;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            margin-bottom: 12px;
+            font-size: 1.4rem;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Rules Container */
+        .rules-container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .rules-list {
+            list-style-position: inside;
+            margin-top: 15px;
+        }
+
+        .rules-list li {
+            margin-bottom: 12px;
+            color: var(--text-muted);
+        }
+
+        .rules-list strong {
+            color: var(--text-color);
+        }
+
+        /* Footer Section */
+        footer {
+            background-color: #0c0c0e;
+            text-align: center;
+            padding: 20px;
+            color: #55555c;
+            font-size: 0.9rem;
+            margin-top: 40px;
+        }
+
+        /* Responsive UI Adjustments */
+        @media (max-width: 600px) {
+            .logo-title { font-size: 2.3rem; }
+            .ip-container { flex-direction: column; width: 100%; }
+            .ip-text { width: 100%; text-align: center; }
+            .copy-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Hero Showcase -->
+    <header>
+        <h1 class="logo-title">The <span>ShadowS</span></h1>
+        <p class="subtitle">A thrilling Vanilla+ Minecraft SMP built for community, survival, and legendary adventures.</p>
+        
+        <!-- Interactive IP Address Copy Block -->
+        <div class="ip-container">
+            <div class="ip-text" id="serverIp">play.shadowssmp.com</div>
+            <button class="copy-btn" id="copyBtn" onclick="copyIpAddress()">Copy IP</button>
+        </div>
+    </header>
+
+    <!-- Main Content Panel -->
+    <main>
+        <h2 class="section-title">Why Join Us?</h2>
+        
+        <!-- Features Display -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚔️</div>
+                <h3>Active Survival (SMP)</h3>
+                <p>Team up with friendly players, build massive bases, build thriving towns, and explore a vast, dynamic world.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💎</div>
+                <h3>Balanced Economy</h3>
+                <p>Player-driven shops, reliable trading configurations, and clean features keeping the game fair without pay-to-win elements.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Grief Protection</h3>
+                <p>Your hard work is completely safe. Land-claiming features ensure your structures belong entirely to you.</p>
+            </div>
+        </div>
+
+        <!-- Server Rules Card -->
+        <div class="rules-container">
+            <h3>📜 Quick Server Rules</h3>
+            <ul class="rules-list">
+                <li><strong>Respect Everyone:</strong> Toxic behavior, hate speech, or harassment is completely prohibited.</li>
+                <li><strong>No Cheating:</strong> X-ray mods, hacked clients, or exploit abuse will trigger a permanent ban.</li>
+                <li><strong>No Unfair Griefing:</strong> Do not destroy or alter other players' builds without their explicit permission.</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- Footer Copyright -->
+    <footer>
+        <p>&copy; 2026 The ShadowS SMP. Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.</p>
+    </footer>
+
+    <!-- Clipboard Functionality Script -->
+    <script>
+        function copyIpAddress() {
+            const ipText = document.getElementById("serverIp").innerText;
+            const copyBtn = document.getElementById("copyBtn");
+
+            navigator.clipboard.writeText(ipText).then(() => {
+                // Update button text temporarily to confirm the copy event
+                copyBtn.innerText = "Copied!";
+                copyBtn.style.backgroundColor = "#2a9d8f";
+                
+                // Return button back to its standard look
+                setTimeout(() => {
+                    copyBtn.innerText = "Copy IP";
+                    copyBtn.style.backgroundColor = "var(--accent-color)";
+                }, 2000);
+            }).catch(err => {
+                console.error("Could not copy server IP address: ", err);
+            });
+        }
+    </script>
+
+</body>
+  </html>
+  
