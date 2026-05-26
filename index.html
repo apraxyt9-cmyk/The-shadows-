@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE SHADOWS | Official SMP Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --neon-purple: #bc13fe;
+            --neon-cyan: #00e5ff;
+            --panel-bg: rgba(6, 6, 15, 0.9);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
+
+        body {
+            background: url('https://i.ibb.co/m5hVGdnZ/file-00000000ada471fabe11981f30649802.png') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.9) 100%);
+            z-index: -1;
+        }
+
+        @keyframes rotateBorder { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulseGlow { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        .main-wrapper { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+
+        .neon-card {
+            position: relative;
+            background: var(--panel-bg);
+            padding: 40px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            z-index: 1;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.9);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .neon-card::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: conic-gradient(transparent, transparent, var(--neon-purple), var(--neon-cyan), transparent);
+            animation: rotateBorder 4s linear infinite;
+            z-index: -2;
+        }
+
+        .neon-card::after {
+            content: '';
+            position: absolute;
+            inset: 4px;
+            background: var(--panel-bg);
+            border-radius: 20px;
+            z-index: -1;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 900;
+            letter-spacing: 10px;
+            margin-bottom: 5px;
+            background: linear-gradient(to right, var(--neon-purple), var(--neon-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status-tag { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.7rem; color: var(--neon-cyan); letter-spacing: 2px; margin-bottom: 20px; }
+        .status-dot { width: 8px; height: 8px; background: var(--neon-cyan); border-radius: 50%; animation: pulseGlow 1.5s infinite; }
+
+        input, textarea {
+            width: 100%; padding: 14px; margin-top: 10px; background: rgba(0,0,0,0.7);
+            border: 1px solid #333; color: white; border-radius: 10px; outline: none; text-align: center;
+        }
+
+        .btn-prime {
+            background: transparent; padding: 14px; width: 100%; border: 2px solid var(--neon-purple);
+            border-radius: 10px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 15px;
+        }
+        .btn-prime:hover { background: var(--neon-purple); box-shadow: 0 0 20px var(--neon-purple); }
+
+        /* IP COPY BOX */
+        .ip-box {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px; padding: 15px; margin: 20px 0; border: 1px solid #333;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .ip-info { text-align: left; }
+        .ip-info small { font-size: 0.6rem; color: #666; }
+        .ip-info p { color: var(--neon-cyan); font-weight: bold; font-size: 1rem; }
+
+        .copy-btn {
+            background: var(--neon-cyan); border: none; padding: 8px 15px; border-radius: 6px;
+            color: black; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 0.7rem;
+        }
+        .copy-btn:hover { background: white; transform: scale(1.05); }
+
+        footer { padding: 20px; text-align: center; background: rgba(0,0,0,0.9); border-top: 1px solid #222; }
+        .credit { font-size: 0.8rem; color: #777; }
+        .credit span { color: var(--neon-purple); font-weight: bold; }
+
+        .admin-nav { position: fixed; top: 20px; right: 20px; z-index: 1000; }
+        .btn-admin { background: none; color: #444; border: 1px solid #222; padding: 5px 12px; border-radius: 20px; font-size: 0.6rem; cursor: pointer; }
+
+        .screen { display: none; }
+        .active { display: flex; flex-direction: column; }
+
+        #admin-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); z-index: 2000; justify-content: center; align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-nav">
+        <button class="btn-admin" onclick="openAdmin()">ADMIN</button>
+    </div>
+
+    <div class="main-wrapper">
+        <!-- AUTH SCREEN -->
+        <div id="auth-screen" class="screen active">
+            <h1 class="logo">SHADOWS</h1>
+            <div class="status-tag"><div class="status-dot"></div> Online</div>
+            
+            <div class="neon-card" id="login-box">
+                <input type="text" id="log-tag" placeholder="GAMER TAG">
+                <input type="password" id="log-pass" placeholder="8-DIGIT PASSCODE">
+                <button class="btn-prime" onclick="login()">ENTER VOID</button>
+                <p style="font-size: 0.7rem; margin-top: 15px;">New Identity? <span onclick="toggleAuth()" style="color:var(--neon-purple); cursor:pointer;">REGISTER</span></p>
+            </div>
+
+            <div class="neon-card" id="reg-box" style="display:none;">
+                <input type="text" id="reg-tag" placeholder="NEW GAMER TAG">
+                <input type="password" id="reg-pass" placeholder="8-DIGIT PASSCODE" maxlength="8">
+                <button class="btn-prime" style="border-color: var(--neon-cyan);" onclick="register()">INITIALIZE</button>
+                <p style="font-size: 0.7rem; margin-top: 15px;">Have Identity? <span onclick="toggleAuth()" style="color:var(--neon-cyan); cursor:pointer;">LOGIN</span></p>
+            </div>
+        </div>
+
+        <!-- MAIN PAGE -->
+        <div id="main-screen" class="screen">
+            <h1 class="logo">SHADOWS</h1>
+            <div class="neon-card">
+                <h2 id="p-name" style="color: var(--neon-cyan); margin-bottom: 10px;"></h2>
+                
+                <div class="ip-box">
+                    <div class="ip-info">
+                        <small>SERVER IP</small>
+                        <p id="display-ip"></p>
+                    </div>
+                    <button class="copy-btn" onclick="copyIP()" id="cp-btn">COPY IP</button>
+                </div>
+
+                <div id="rules-list" style="text-align: left; font-size: 0.8rem; line-height: 1.6; border-left: 2px solid var(--neon-purple); padding-left: 15px; margin-bottom: 20px;"></div>
+
+                <button class="btn-prime" onclick="location.reload()" style="border-color: #333; font-size: 0.7rem;">LOGOUT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN MODAL -->
+    <div id="admin-modal">
+        <div class="neon-card" style="--neon-purple: red; max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <h2 style="color: red; margin-bottom: 20px;">ADMIN CORE</h2>
+            <div id="admin-auth">
+                <input type="password" id="admin-master" placeholder="MASTER KEY">
+                <button class="btn-prime" onclick="checkAdmin()" style="border-color: red;">UNLOCK</button>
+            </div>
+            <div id="admin-controls" style="display:none; text-align: left;">
+                <label>ADD USER</label>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="adm-add-tag" placeholder="Tag">
+                    <input type="text" id="adm-add-pass" placeholder="Pass" maxlength="8">
+                </div>
+                <button class="btn-prime" onclick="adminAddUser()" style="border-color: green;">ADD</button>
+                <hr style="margin:20px 0; opacity:0.1;">
+                <label>SETTINGS</label>
+                <input type="text" id="edit-ip">
+                <textarea id="edit-rules" rows="4"></textarea>
+                <button class="btn-prime" onclick="saveSettings()">SAVE SETTINGS</button>
+                <hr style="margin:20px 0; opacity:0.1;">
+                <table id="user-table"></table>
+            </div>
+            <button class="btn-prime" onclick="closeAdmin()" style="border-color: #222;">CLOSE</button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="credit">Website Developed by <span>SHANTO</span></div>
+        <div class="copyright">&copy; 2024 THE SHADOWS SMP | All Rights Reserved.</div>
+    </footer>
+
+    <script>
+        // SUPABASE CONFIG
+        const S_URL = "https://ouorknbifxhnitamaiaw.supabase.co";
+        const S_KEY = "sb_publishable_Io2ZXVjed3kCz7RKuOKVzw_mB96BhHD";
+        const _sb = supabase.createClient(S_URL, S_KEY);
+
+        let ip = localStorage.getItem('s_ip') || "theshadowsbySN.play.hosting";
+        let rules = JSON.parse(localStorage.getItem('s_rules')) || ["No Griefing.", "8-digit password mandatory.", "Respect Shanto."];
+
+        function refreshUI() {
+            document.getElementById('display-ip').innerText = ip;
+            document.getElementById('rules-list').innerHTML = rules.map(r => `• ${r}<br>`).join('');
+        }
+
+        // --- FIXED COPY FUNCTION ---
+        function copyIP() {
+            const ipText = document.getElementById('display-ip').innerText;
+            
+            // Fallback Method (সব ব্রাউজারে কাজ করার জন্য)
+            const textArea = document.createElement("textarea");
+            textArea.value = ipText;
+            document.body.appendChild(textArea);
+            textArea.select();
+            textArea.setSelectionRange(0, 99999); // মোবাইলের জন্য
+            
+            try {
+                document.execCommand('copy');
+                const btn = document.getElementById('cp-btn');
+                btn.innerText = "COPIED!";
+                btn.style.background = "white";
+                setTimeout(() => {
+                    btn.innerText = "COPY IP";
+                    btn.style.background = "var(--neon-cyan)";
+                }, 2000);
+            } catch (err) {
+                alert("Could not copy! Please manual copy: " + ipText);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        async function register() {
+            const tag = document.getElementById('reg-tag').value.trim();
+            const pass = document.getElementById('reg-pass').value;
+            if(!tag || pass.length !== 8) return alert("Invalid Data!");
+            const { error } = await _sb.from('players').insert([{ tag, password: pass }]);
+            if(error) alert("Tag Taken!"); else { alert("Registered!"); enter(tag); }
+        }
+
+        async function login() {
+            const tag = document.getElementById('log-tag').value.trim();
+            const pass = document.getElementById('log-pass').value;
+            const { data } = await _sb.from('players').select('*').eq('tag', tag).eq('password', pass).single();
+            if(data) enter(tag); else alert("Access Denied!");
+        }
+
+        async function checkAdmin() {
+            if(document.getElementById('admin-master').value === "shanto9988") {
+                document.getElementById('admin-auth').style.display = "none";
+                document.getElementById('admin-controls').style.display = "block";
+                document.getElementById('edit-ip').value = ip;
+                document.getElementById('edit-rules').value = rules.join('\n');
+                fetchUsers();
+            } else alert("Wrong Key!");
+        }
+
+        async function fetchUsers() {
+            const { data } = await _sb.from('players').select('*');
+            let h = "<tr><th>TAG</th><th>ACTION</th></tr>";
+            data.forEach(u => h += `<tr><td>${u.tag}</td><td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="deleteUser(${u.id})">REMOVE</button></td></tr>`);
+            document.getElementById('user-table').innerHTML = h;
+        }
+
+        async function deleteUser(id) {
+            if(confirm("Delete?")) { await _sb.from('players').delete().eq('id', id); fetchUsers(); }
+        }
+
+        async function adminAddUser() {
+            const tag = document.getElementById('adm-add-tag').value.trim();
+            const pass = document.getElementById('adm-add-pass').value;
+            if(tag && pass.length === 8) { await _sb.from('players').insert([{ tag, password: pass }]); fetchUsers(); }
+        }
+
+        function saveSettings() {
+            ip = document.getElementById('edit-ip').value;
+            rules = document.getElementById('edit-rules').value.split('\n').filter(r => r.trim() !== "");
+            localStorage.setItem('s_ip', ip);
+            localStorage.setItem('s_rules', JSON.stringify(rules));
+            refreshUI(); alert("Saved!");
+        }
+
+        function enter(t) {
+            document.getElementById('auth-screen').classList.remove('active');
+            document.getElementById('main-screen').classList.add('active');
+            document.getElementById('p-name').innerText = "WELCOME, " + t.toUpperCase();
+            refreshUI();
+        }
+
+        function toggleAuth() {
+            const l = document.getElementById('login-box'), r = document.getElementById('reg-box');
+            l.style.display = l.style.display === 'none' ? 'block' : 'none';
+            r.style.display = r.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
+        function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
+        
+        refreshUI();
+    </script>
+</body>
+</html>
