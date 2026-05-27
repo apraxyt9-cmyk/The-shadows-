@@ -11,7 +11,7 @@
         :root {
             --neon-purple: #bc13fe;
             --neon-cyan: #00e5ff;
-            --panel-bg: rgba(6, 6, 15, 0.9);
+            --panel-bg: rgba(6, 6, 15, 0.95);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Orbitron', sans-serif; }
@@ -23,7 +23,6 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow-x: hidden;
         }
 
         body::before {
@@ -95,7 +94,6 @@
         }
         .btn-prime:hover { background: var(--neon-purple); box-shadow: 0 0 20px var(--neon-purple); }
 
-        /* IP COPY BOX */
         .ip-box {
             background: rgba(255,255,255,0.05);
             border-radius: 12px; padding: 15px; margin: 20px 0; border: 1px solid #333;
@@ -130,14 +128,14 @@
 <body>
 
     <div class="admin-nav">
-        <button class="btn-admin" onclick="openAdmin()">ADMIN</button>
+        <button class="btn-admin" onclick="openAdmin()">ADMIN CORE</button>
     </div>
 
     <div class="main-wrapper">
         <!-- AUTH SCREEN -->
         <div id="auth-screen" class="screen active">
             <h1 class="logo">SHADOWS</h1>
-            <div class="status-tag"><div class="status-dot"></div> Online</div>
+            <div class="status-tag"><div class="status-dot"></div> Server Online</div>
             
             <div class="neon-card" id="login-box">
                 <input type="text" id="log-tag" placeholder="GAMER TAG">
@@ -163,7 +161,7 @@
                 <div class="ip-box">
                     <div class="ip-info">
                         <small>SERVER IP</small>
-                        <p id="display-ip"></p>
+                        <p id="display-ip">Loading...</p>
                     </div>
                     <button class="copy-btn" onclick="copyIP()" id="cp-btn">COPY IP</button>
                 </div>
@@ -189,14 +187,14 @@
                     <input type="text" id="adm-add-tag" placeholder="Tag">
                     <input type="text" id="adm-add-pass" placeholder="Pass" maxlength="8">
                 </div>
-                <button class="btn-prime" onclick="adminAddUser()" style="border-color: green;">ADD</button>
+                <button class="btn-prime" onclick="adminAddUser()" style="border-color: green;">ADD TO DB</button>
                 <hr style="margin:20px 0; opacity:0.1;">
-                <label>SETTINGS</label>
-                <input type="text" id="edit-ip">
-                <textarea id="edit-rules" rows="4"></textarea>
-                <button class="btn-prime" onclick="saveSettings()">SAVE SETTINGS</button>
+                <label>GLOBAL SETTINGS</label>
+                <input type="text" id="edit-ip" placeholder="Server IP">
+                <textarea id="edit-rules" rows="4" placeholder="Rules (one per line)"></textarea>
+                <button class="btn-prime" onclick="saveSettings()" id="save-btn">UPDATE FOR EVERYONE</button>
                 <hr style="margin:20px 0; opacity:0.1;">
-                <table id="user-table"></table>
+                <table id="user-table" style="width:100%; font-size:0.7rem;"></table>
             </div>
             <button class="btn-prime" onclick="closeAdmin()" style="border-color: #222;">CLOSE</button>
         </div>
@@ -208,52 +206,49 @@
     </footer>
 
     <script>
-        // SUPABASE CONFIG
         const S_URL = "https://ouorknbifxhnitamaiaw.supabase.co";
         const S_KEY = "sb_publishable_Io2ZXVjed3kCz7RKuOKVzw_mB96BhHD";
         const _sb = supabase.createClient(S_URL, S_KEY);
 
-        let ip = localStorage.getItem('s_ip') || "theshadowsbySN.play.hosting";
-        let rules = JSON.parse(localStorage.getItem('s_rules')) || ["No Griefing.", "8-digit password mandatory.", "Respect Shanto."];
+        let g_ip = "";
+        let g_rules = [];
 
-        function refreshUI() {
-            document.getElementById('display-ip').innerText = ip;
-            document.getElementById('rules-list').innerHTML = rules.map(r => `• ${r}<br>`).join('');
+        // --- LOAD CONFIG FROM DATABASE ---
+        async function loadGlobalConfig() {
+            const { data } = await _sb.from('config').select('*');
+            if (data) {
+                data.forEach(item => {
+                    if (item.name === 'server_ip') g_ip = item.value;
+                    if (item.name === 'server_rules') g_rules = JSON.parse(item.value);
+                });
+                refreshUI();
+            }
         }
 
-        // --- FIXED COPY FUNCTION ---
+        function refreshUI() {
+            document.getElementById('display-ip').innerText = g_ip;
+            document.getElementById('rules-list').innerHTML = g_rules.map(r => `• ${r}<br>`).join('');
+        }
+
         function copyIP() {
             const ipText = document.getElementById('display-ip').innerText;
-            
-            // Fallback Method (সব ব্রাউজারে কাজ করার জন্য)
             const textArea = document.createElement("textarea");
             textArea.value = ipText;
             document.body.appendChild(textArea);
             textArea.select();
-            textArea.setSelectionRange(0, 99999); // মোবাইলের জন্য
-            
-            try {
-                document.execCommand('copy');
-                const btn = document.getElementById('cp-btn');
-                btn.innerText = "COPIED!";
-                btn.style.background = "white";
-                setTimeout(() => {
-                    btn.innerText = "COPY IP";
-                    btn.style.background = "var(--neon-cyan)";
-                }, 2000);
-            } catch (err) {
-                alert("Could not copy! Please manual copy: " + ipText);
-            }
-            
+            document.execCommand('copy');
             document.body.removeChild(textArea);
+            const btn = document.getElementById('cp-btn');
+            btn.innerText = "COPIED!";
+            setTimeout(() => btn.innerText = "COPY IP", 2000);
         }
 
         async function register() {
             const tag = document.getElementById('reg-tag').value.trim();
             const pass = document.getElementById('reg-pass').value;
-            if(!tag || pass.length !== 8) return alert("Invalid Data!");
+            if(!tag || pass.length !== 8) return alert("Error!");
             const { error } = await _sb.from('players').insert([{ tag, password: pass }]);
-            if(error) alert("Tag Taken!"); else { alert("Registered!"); enter(tag); }
+            if(error) alert("Tag exists!"); else enter(tag);
         }
 
         async function login() {
@@ -263,12 +258,27 @@
             if(data) enter(tag); else alert("Access Denied!");
         }
 
+        async function saveSettings() {
+            const newIP = document.getElementById('edit-ip').value;
+            const newRules = document.getElementById('edit-rules').value.split('\n').filter(r => r.trim() !== "");
+            
+            document.getElementById('save-btn').innerText = "SAVING...";
+
+            // Update Database
+            await _sb.from('config').upsert({ name: 'server_ip', value: newIP }, { onConflict: 'name' });
+            await _sb.from('config').upsert({ name: 'server_rules', value: JSON.stringify(newRules) }, { onConflict: 'name' });
+
+            alert("Settings Updated Globally!");
+            document.getElementById('save-btn').innerText = "UPDATE FOR EVERYONE";
+            loadGlobalConfig();
+        }
+
         async function checkAdmin() {
             if(document.getElementById('admin-master').value === "shanto9988") {
                 document.getElementById('admin-auth').style.display = "none";
                 document.getElementById('admin-controls').style.display = "block";
-                document.getElementById('edit-ip').value = ip;
-                document.getElementById('edit-rules').value = rules.join('\n');
+                document.getElementById('edit-ip').value = g_ip;
+                document.getElementById('edit-rules').value = g_rules.join('\n');
                 fetchUsers();
             } else alert("Wrong Key!");
         }
@@ -276,7 +286,7 @@
         async function fetchUsers() {
             const { data } = await _sb.from('players').select('*');
             let h = "<tr><th>TAG</th><th>ACTION</th></tr>";
-            data.forEach(u => h += `<tr><td>${u.tag}</td><td><button style="color:red; background:none; border:none; cursor:pointer;" onclick="deleteUser(${u.id})">REMOVE</button></td></tr>`);
+            data.forEach(u => h += `<tr><td>${u.tag}</td><td><button style="color:red; cursor:pointer;" onclick="deleteUser(${u.id})">REMOVE</button></td></tr>`);
             document.getElementById('user-table').innerHTML = h;
         }
 
@@ -290,19 +300,11 @@
             if(tag && pass.length === 8) { await _sb.from('players').insert([{ tag, password: pass }]); fetchUsers(); }
         }
 
-        function saveSettings() {
-            ip = document.getElementById('edit-ip').value;
-            rules = document.getElementById('edit-rules').value.split('\n').filter(r => r.trim() !== "");
-            localStorage.setItem('s_ip', ip);
-            localStorage.setItem('s_rules', JSON.stringify(rules));
-            refreshUI(); alert("Saved!");
-        }
-
         function enter(t) {
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('main-screen').classList.add('active');
             document.getElementById('p-name').innerText = "WELCOME, " + t.toUpperCase();
-            refreshUI();
+            loadGlobalConfig();
         }
 
         function toggleAuth() {
@@ -314,7 +316,7 @@
         function openAdmin() { document.getElementById('admin-modal').style.display = 'flex'; }
         function closeAdmin() { document.getElementById('admin-modal').style.display = 'none'; }
         
-        refreshUI();
+        loadGlobalConfig();
     </script>
 </body>
 </html>
